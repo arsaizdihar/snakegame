@@ -18,7 +18,7 @@ class Snake:
 
     def create_snake(self):
         x = 300
-        for _ in range(10):
+        for _ in range(3):
             self.add_segment(x, 300)
             x -= SIZE
 
@@ -39,12 +39,14 @@ class Snake:
             self.head.y += self.vel_y * SIZE
 
     def check_collision(self):
-        # cek apakah snake masih hidup/tidak
-        if self.head.x < 0 or self.head.x > WIDTH-SIZE or self.head.y < 0 or self.head.y > HEIGHT-SIZE:
+        # keluar atau nabrak tembok
+        if self.head.left < 0 or self.head.right > WIDTH or self.head.top < 0 or self.head.bottom > HEIGHT:
             self.alive = False
+        # cek collision head dengan segments
         for segment in self.segments[1:]:
             if self.head.colliderect(segment):
                 self.alive = False
+
         # cek collision dengan food
         if self.head.colliderect(food.rect):
             self.add_segment(self.segments[-1].x, self.segments[-1].y)
@@ -75,8 +77,6 @@ class Snake:
     def restart(self):
         self.__init__()
 
-# buat class food
-
 
 class Food:
     def __init__(self):
@@ -86,8 +86,8 @@ class Food:
     def reset_pos(self):
         is_valid = False
         while not is_valid:
-            self.rect.x = random.randint(0, WIDTH//SIZE-1) * SIZE
-            self.rect.y = random.randint(0, HEIGHT//SIZE-1) * SIZE
+            self.rect.x = random.randint(0, WIDTH//SIZE - 1) * SIZE
+            self.rect.y = random.randint(0, WIDTH//SIZE - 1) * SIZE
             collide = False
             for segment in player.segments:
                 if self.rect.colliderect(segment):
@@ -104,39 +104,32 @@ class Food:
 
 pygame.init()
 pygame.font.init()
-font = pygame.font.SysFont("Arial", 24)
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Snake Game")
 player = Snake()
 food = Food()
 clock = pygame.time.Clock()
-
-# atur speed snake
+font = pygame.font.SysFont("Arial", 18)
 speed = 0.25
 running = True
-
-
-def display_score():
-    scoreboard = font.render(f"Score: {player.score}", False, "green")
-    scoreboard.set_alpha(100)
-    window.blit(scoreboard, (0, 0))
 
 
 def redraw_window():
     window.fill((0, 0, 0))
     # draw seluruh elemen game
-    food.draw()
     player.draw()
-    display_score()
+    food.draw()
+    scoreboard = font.render(f"Score: {player.score}", False, "green")
+    window.blit(scoreboard, (0, 0))
     pygame.display.flip()
 
 
 while running:
     clock.tick(FPS*speed)
     redraw_window()
+    player.update()
     if player.check_collision():
         speed += 0.01
-    player.update()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -150,6 +143,7 @@ while running:
                 player.left()
             elif event.key == pygame.K_RIGHT:
                 player.right()
-            elif event.key == pygame.K_F2 and not player.alive:
-                player.restart()
-                food.restart()
+            elif event.key == pygame.K_F2:
+                if not player.alive:
+                    player.restart()
+                    food.restart()

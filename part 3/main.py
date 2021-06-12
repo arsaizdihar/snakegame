@@ -18,7 +18,7 @@ class Snake:
 
     def create_snake(self):
         x = 300
-        for _ in range(3):
+        for _ in range(10):
             self.add_segment(x, 300)
             x -= SIZE
 
@@ -42,10 +42,9 @@ class Snake:
         # cek apakah snake masih hidup/tidak
         if self.head.x < 0 or self.head.x > WIDTH-SIZE or self.head.y < 0 or self.head.y > HEIGHT-SIZE:
             self.alive = False
-        for segment in self.segments:
-            if not segment == self.head:
-                if self.head.colliderect(segment):
-                    self.alive = False
+        for segment in self.segments[1:]:
+            if self.head.colliderect(segment):
+                self.alive = False
         # cek collision dengan food
         if self.head.colliderect(food.rect):
             self.add_segment(self.segments[-1].x, self.segments[-1].y)
@@ -135,9 +134,9 @@ def redraw_window():
 while running:
     clock.tick(FPS*speed)
     redraw_window()
-    player.update()
     if player.check_collision():
         speed += 0.01
+    player.update()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
